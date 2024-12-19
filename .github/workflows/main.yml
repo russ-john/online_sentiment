@@ -4,6 +4,7 @@ on:
   schedule:
   # Runs every Monday at 11am UTC (6AM EST)
   - cron: "0 11 * * 1"
+  workflow_dispatch:
 
 jobs:
   refresh:
