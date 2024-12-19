@@ -8,21 +8,20 @@ on:
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-  steps:
-  - name: Checkout Repository
-    uses: actions/checkout@v3
-
-  - name: Create or Update Refresh File
-    run: |
-      # Create or update last_refresh.txt with a timestamp
-      echo "Auto-refreshed on $(date)" >> last_refresh.txt
-
-  - name: Commit Changes
-    run: |
-    git config --global user.name "GitHub Actions Bot"
-    git config --global user.email "noreply@github.com"
-    git add .
-    git commit -m "Auto-refresh: $(date)" || echo "No changes to commit"
-    git push origin main
+      - name: Create or Update Refresh File
+        run: |
+          # Create or update last_refresh.txt with a timestamp
+          echo "Auto-refreshed on $(date)" >> last_refresh.txt
   
+      - name: Commit Changes
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "noreply@github.com"
+          git add .
+          git commit -m "Auto-refresh: $(date)" || echo "No changes to commit"
+          git push origin main
