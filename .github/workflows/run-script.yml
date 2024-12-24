@@ -25,9 +25,13 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Run Python script
+    - name: Run Enterprise Risk News script
       run: |
-        python script.py
+        python EmergingRiskNews.py
+
+    - name: Run Emerging Risk News script
+      run: |
+        python EnterpriseRiskNews.py
 
     - name: Push generated CSV files
       run: |
