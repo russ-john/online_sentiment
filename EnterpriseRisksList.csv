@@ -1,0 +1,96 @@
+ENTERPRISE_RISK_ID,ENTERPRISE_RISK,SEARCH_TERMS
+2,"Cyber or Info Sec Breach, Data Privacy",Cyberattacks
+2,"Cyber or Info Sec Breach, Data Privacy",Ransomware
+2,"Cyber or Info Sec Breach, Data Privacy",Malware
+2,"Cyber or Info Sec Breach, Data Privacy",Phishing
+2,"Cyber or Info Sec Breach, Data Privacy",Email account takeovers
+2,"Cyber or Info Sec Breach, Data Privacy",Nation-state actors
+2,"Cyber or Info Sec Breach, Data Privacy",Distributed denial of service (DDoS) attacks
+2,"Cyber or Info Sec Breach, Data Privacy",Botnets
+2,"Cyber or Info Sec Breach, Data Privacy",REvil
+2,"Cyber or Info Sec Breach, Data Privacy",Netwalker
+2,"Cyber or Info Sec Breach, Data Privacy",Maze
+2,"Cyber or Info Sec Breach, Data Privacy",Conti
+2,"Cyber or Info Sec Breach, Data Privacy",DoppelPaymer
+2,"Cyber or Info Sec Breach, Data Privacy",Data breach
+2,"Cyber or Info Sec Breach, Data Privacy",CISA security advisor
+2,"Cyber or Info Sec Breach, Data Privacy",Data privacy regulations
+2,"Cyber or Info Sec Breach, Data Privacy",Data breach regulations
+2,"Cyber or Info Sec Breach, Data Privacy",Malicious insider attack
+2,"Cyber or Info Sec Breach, Data Privacy",Quantum Computing
+4,Disruption of BD Regulation Model,Regulation BI and Form CRS
+4,Disruption of BD Regulation Model,FINRA (Financial Industry Regulatory Authority)
+4,Disruption of BD Regulation Model,Broker-dealer migration to Investment Advisors
+4,Disruption of BD Regulation Model,Broker-dealers
+4,Disruption of BD Regulation Model,Registered Investment Advisors (RIAs)
+4,Disruption of BD Regulation Model,Investment adviser
+4,Disruption of BD Regulation Model,Migration of assets to IA Channel
+4,Disruption of BD Regulation Model,Fee-based accounts
+4,Disruption of BD Regulation Model,DOL Fiduciary Rule
+4,Disruption of BD Regulation Model,Dually registered BD/IA
+4,Disruption of BD Regulation Model,ERISA
+4,Disruption of BD Regulation Model,State fiduciary rule
+4,Disruption of BD Regulation Model,DOL Independent Contractor Classification Rule
+6,Disruption of Cross-Market Surveillance,Chicago Board Options Exchange (CBOE)
+6,Disruption of Cross-Market Surveillance,Boston Options Exchange (BOX)
+6,Disruption of Cross-Market Surveillance,Investors Exchange (IEX)
+6,Disruption of Cross-Market Surveillance,MIAX
+6,Disruption of Cross-Market Surveillance,Long-Term Stock Exchange (LTSE)
+6,Disruption of Cross-Market Surveillance,Members Exchange (MEMX)
+6,Disruption of Cross-Market Surveillance,Cross-market surveillance
+6,Disruption of Cross-Market Surveillance,SRO immunity
+6,Disruption of Cross-Market Surveillance,"FINRA CAT, LLC"
+6,Disruption of Cross-Market Surveillance,FINRA Market Surveillance
+6,Disruption of Cross-Market Surveillance,Consolidated Audit Trail (CAT)
+6,Disruption of Cross-Market Surveillance,SEC CAT Security Amendment
+1,Challenges to FINRA’s Constitutionality,FINRA Constitutionality
+7,Gen AI,Deepfakes
+7,Gen AI,Misinformation
+7,Gen AI,Hallucinations
+7,Gen AI,Disinformation
+5,Ineffective Strategic Relationships,Public Investors Advocate Bar Association (PIABA)
+5,Ineffective Strategic Relationships,Securities and Exchange Commission (SEC)
+5,Ineffective Strategic Relationships,Gary Gensler
+5,Ineffective Strategic Relationships,Commodity Futures Trading Commission (CFTC)
+5,Ineffective Strategic Relationships,North American Securities Administration Association (NASAA)
+5,Ineffective Strategic Relationships,U.S. Department of the Treasury
+5,Ineffective Strategic Relationships,Municipal Securities Rulemaking Board (MSRB)
+5,Ineffective Strategic Relationships,Securities Industry and Financial Markets Association (SIFMA)
+5,Ineffective Strategic Relationships,House financial services committee
+5,Ineffective Strategic Relationships,Senate Banking Committee
+5,Ineffective Strategic Relationships,Securities Regulation
+5,Ineffective Strategic Relationships,Subcommittee on Digital Assets
+5,Ineffective Strategic Relationships,Robert Cook (FINRA)
+8,Significant Business Interruption,Bird Flu
+8,Significant Business Interruption,Third-party disruptions
+8,Significant Business Interruption,Geopolitical Tensions
+8,Significant Business Interruption,AWS outage
+3,Significant Investor or Market Harm,Funding portals and crowdfunding offerings
+3,Significant Investor or Market Harm,Crypto retail investor fraud
+3,Significant Investor or Market Harm,Retail investor fraud
+3,Significant Investor or Market Harm,Cryptocurrency
+3,Significant Investor or Market Harm,Fintech
+3,Significant Investor or Market Harm,Finfluencers
+3,Significant Investor or Market Harm,Gamification
+3,Significant Investor or Market Harm,0TDE
+3,Significant Investor or Market Harm,Payment for order flow (PFOF)
+3,Significant Investor or Market Harm,Best execution rule
+3,Significant Investor or Market Harm,Options contracts
+3,Significant Investor or Market Harm,Alternative trading systems (ATS)
+3,Significant Investor or Market Harm,leveraged exchange-traded products (ETPs)
+3,Significant Investor or Market Harm,Inverse exchange-traded products (ETPs)
+3,Significant Investor or Market Harm,Variable annuities
+3,Significant Investor or Market Harm,Security-based Swap (SBS)
+3,Significant Investor or Market Harm,Fractional shares
+3,Significant Investor or Market Harm,SEC Market Data Infrastructure
+3,Significant Investor or Market Harm,Market manipulation
+3,Significant Investor or Market Harm,Spoofing
+3,Significant Investor or Market Harm,Self-directed trading
+3,Significant Investor or Market Harm,Investment fraud
+3,Significant Investor or Market Harm,High risk brokers
+10,Strategic Initiative Failure,FINRA advanced analytics
+10,Strategic Initiative Failure,Reg SCI
+11,Talent Gaps,"Diversity, equity, and inclusion (DEI)"
+11,Talent Gaps,Unemployment Rate
+11,Talent Gaps,Quit Rate
+11,Talent Gaps,Wage Growth
