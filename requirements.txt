@@ -7,3 +7,5 @@ vaderSentiment~=3.3.2
 newspaper3k~=0.2.8
 setuptools~=68.2.0
 googlenewsdecoder~=0.1.6
+lxml
+lxml_html_clean
