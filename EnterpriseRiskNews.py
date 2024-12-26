@@ -41,7 +41,7 @@ for u_agent in user_agent_list:
     header = {'User-Agent': user_agent}
 
 # Read in Alerts file and create empty lists for storing values
-read_file = pd.read_csv('EnterpriseRisksList.csv')
+read_file = pd.read_csv('EnterpriseRisksList.csv', encoding='ISO-8859-1')
 
 # enterprise_risk = []
 search_terms = []
