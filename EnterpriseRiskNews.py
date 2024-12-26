@@ -11,7 +11,7 @@ import datetime as dt
 import nltk
 from googlenewsdecoder import new_decoderv1
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-
+import os
 
 # Set dates for today and yesterday
 now = dt.date.today()
@@ -145,9 +145,13 @@ final_df = joined_df[['ENTERPRISE_RISK', 'SEARCH_TERMS', 'TITLE', 'SUMMARY', 'KE
                       'SOURCE', 'SOURCE_URL', 'SENTIMENT', 'POLARITY']]
 final_df = final_df.sort_values(by='PUBLISHED_DATE', ascending=False)
 
+# define output directory and file
+script_dir = os.path.dirname(os.path.abspath(__file__))
+output_dir = os.path.join(script_dir, 'online_sentiment/output')
+os.makedirs(output_dir, exist_ok=True)
 
-# Save inside the repo
-output_path = 'online_sentiment/output/enterprise_risks_online_sentiment.csv'
+# save inside the repo
+output_path = os.path.join(output_dir, 'enterprise_risks_online_sentiment.csv')
 final_df.to_csv(output_path, index=False)
 
 print('DataFrame saved to {output_path}')
