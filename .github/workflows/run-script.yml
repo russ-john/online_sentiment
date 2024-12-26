@@ -30,6 +30,9 @@ jobs:
       run: |
         pip install lxml[html_clean] lxml_html_clean
 
+    - name: Create Output Directory
+      run: mkdir -p online_sentiment/output
+
     - name: Run Enterprise Risk News script
       run: |
         python EmergingRiskNews.py
