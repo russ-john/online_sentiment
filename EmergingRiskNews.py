@@ -53,6 +53,7 @@ for u_agent in user_agent_list:
 # Read in Alerts file and create empty lists for storing values
 # read_file = pd.read_csv('EmergingRiskAlerts.csv')
 read_file = pd.read_csv('EmergingRisksList.csv', encoding='ISO-8859-1')
+read_file['EMERGING_RISK_ID'] = pd.to_numeric(df['EMERGING_RISK_ID'], downcast='integer', errors='coerce')
 
 search_terms = []
 title = []
