@@ -163,7 +163,15 @@ alerts = pd.DataFrame(
 
 print('Created sentiments')
 
+# merge dataframes
+print("Alerts columns:", alerts.columns)
+print("Read file columns:", read_file.columns)
+
 joined_df = alerts.merge(read_file, on='SEARCH_TERMS', how='left')
+print(f"Rows in joined_df: {len(joined_df)}")
+print("Joined DataFrame columns:", joined_df.columns)
+
+# select columns
 final_df = joined_df[['EMERGING_RISK_ID', 'ALERT_NAME', 'TITLE', 'SUMMARY', 'KEYWORDS', 'PUBLISHED_DATE', 'LINK',
                       'SOURCE', 'SOURCE_URL', 'SENTIMENT', 'POLARITY']]
 final_df = final_df.sort_values(by='PUBLISHED_DATE', ascending=False)
@@ -172,9 +180,9 @@ final_df = final_df.sort_values(by='PUBLISHED_DATE', ascending=False)
 script_dir = os.path.dirname(os.path.abspath(__file__))
 output_dir = os.path.join(script_dir, 'online_sentiment/output')
 os.makedirs(output_dir, exist_ok=True)
-
-# save inside the repo
 output_path = os.path.join(output_dir, 'emerging_risks_online_sentiment.csv')
-final_df.to_csv(output_path, index=False)
 
-print('DataFrame saved to {output_path}')
+# write dataframe
+final_df.to_csv(output_path, index=False)
+print(f"DataFrame saved to {output_path}")
+
