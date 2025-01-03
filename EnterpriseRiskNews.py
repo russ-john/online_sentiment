@@ -41,9 +41,10 @@ for u_agent in user_agent_list:
     header = {'User-Agent': user_agent}
 
 # Read in Alerts file and create empty lists for storing values
-read_file = pd.read_csv('EnterpriseRisksList.csv', encoding='ISO-8859-1')
+read_file = pd.read_csv('EnterpriseRisksList.csv', encoding='utf-8')
+read_file['EMERGING_RISK_ID'] = pd.to_numeric(read_file['ENTERPRISE_RISK_ID'], downcast='integer', errors='coerce')
+read_file.columns = read_file.columns.str.strip()
 
-# enterprise_risk = []
 search_terms = []
 title = []
 published = []
@@ -141,7 +142,7 @@ alerts = pd.DataFrame(
 print('Created sentiments')
 
 joined_df = alerts.merge(read_file, on='SEARCH_TERMS', how='left')
-final_df = joined_df[['ENTERPRISE_RISK', 'SEARCH_TERMS', 'TITLE', 'SUMMARY', 'KEYWORDS', 'PUBLISHED_DATE', 'LINK',
+final_df = joined_df[['ENTERPRISE_RISK_ID', 'SEARCH_TERMS', 'TITLE', 'SUMMARY', 'KEYWORDS', 'PUBLISHED_DATE', 'LINK',
                       'SOURCE', 'SOURCE_URL', 'SENTIMENT', 'POLARITY']]
 final_df = final_df.sort_values(by='PUBLISHED_DATE', ascending=False)
 
