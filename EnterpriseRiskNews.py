@@ -146,6 +146,9 @@ final_df = joined_df[['ENTERPRISE_RISK_ID', 'SEARCH_TERMS', 'TITLE', 'SUMMARY', 
                       'SOURCE', 'SOURCE_URL', 'SENTIMENT', 'POLARITY']]
 final_df = final_df.sort_values(by='PUBLISHED_DATE', ascending=False)
 
+# add timestamp of the last run
+final_df['LAST_RUN_TIMESTAMP'] = pd.Timestamp.now()
+
 # define output directory and file
 script_dir = os.path.dirname(os.path.abspath(__file__))
 output_dir = os.path.join(script_dir, 'online_sentiment/output')
