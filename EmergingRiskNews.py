@@ -178,7 +178,7 @@ os.makedirs(output_dir, exist_ok=True)
 
 # save inside the repo
 output_path = os.path.join(output_dir, 'emerging_risks_online_sentiment.csv')
-final_df.to_csv(output_path, index=False)
+final_df.to_csv(output_path, mode='a', index=False)
 
 print(f"DataFrame saved to {output_path}")
 
