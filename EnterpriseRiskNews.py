@@ -147,6 +147,7 @@ final_df = final_df.sort_values(by='PUBLISHED_DATE', ascending=False)
 
 # add timestamp of the last run
 final_df['LAST_RUN_TIMESTAMP'] = dt.datetime.now()
+final_df['LAST_RUN_TIMESTAMP'] = pd.to_datetime(final_df['LAST_RUN_TIMESTAMP'], errors='coerce').dt.strftime('%Y-%m-%d %H:%M:%S')
 
 # define output directory and file
 script_dir = os.path.dirname(os.path.abspath(__file__))
