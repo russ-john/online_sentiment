@@ -35,11 +35,11 @@ jobs:
 
     - name: Run Enterprise Risk News script
       run: |
-        python EmergingRiskNews.py
+        python EnterpriseRiskNews.py
 
     - name: Run Emerging Risk News script
       run: |
-        python EnterpriseRiskNews.py
+        python EmergingRiskNews.py
 
     - name: Push generated CSV files
       run: |
