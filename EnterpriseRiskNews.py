@@ -47,8 +47,19 @@ for u_agent in user_agent_list:
 # read in encoded alerts and create empty lists for storing values
 read_file = pd.read_csv('EnterpriseRisksListEncoded.csv', encoding='utf-8')
 read_file['ENTERPRISE_RISK_ID'] = pd.to_numeric(read_file['ENTERPRISE_RISK_ID'], downcast='integer', errors='coerce')
-read_file['SEARCH_TERMS'] = read_file.ENCODED_TERMS.to_bytes((read_file.ENCODED_TERMS.bit_length() + 7) // 8, byteorder='little').decode()
-read_file.columns = read_file.columns.str.strip()
+
+def process_encoded_search_terms(term):
+    try:
+        term_str = str(term)
+        byte_rep = term_str.encode('utf-8')
+        decoded_rep = byte_rep.decode('utf-8')
+        return decoded_rep
+    except Exception as e:
+        print(f"Error processing term {term}: {e}")
+        return None
+
+# Apply the function to each element
+read_file['SEARCH_TERMS'] = read_file['ENCODED_TERMS'].apply(process_encoded_search_terms)
 
 search_terms = []
 title = []
