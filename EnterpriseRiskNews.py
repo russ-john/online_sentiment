@@ -40,8 +40,14 @@ for u_agent in user_agent_list:
     header = {'User-Agent': user_agent}
 
 # Read in Alerts file and create empty lists for storing values
-read_file = pd.read_csv('EnterpriseRisksList.csv', encoding='utf-8')
-read_file['EMERGING_RISK_ID'] = pd.to_numeric(read_file['ENTERPRISE_RISK_ID'], downcast='integer', errors='coerce')
+# read_file = pd.read_csv('EnterpriseRisksList.csv', encoding='utf-8')
+# read_file['EMERGING_RISK_ID'] = pd.to_numeric(read_file['ENTERPRISE_RISK_ID'], downcast='integer', errors='coerce')
+# read_file.columns = read_file.columns.str.strip()
+
+# read in encoded alerts and create empty lists for storing values
+read_file = pd.read_csv('EnterpriseRisksListEncoded.csv', encoding='utf-8')
+read_file['ENTERPRISE_RISK_ID'] = pd.to_numeric(read_file['ENTERPRISE_RISK_ID'], downcast='integer', errors='coerce')
+read_file['SEARCH_TERMS'] = read_file.ENCODED_TERMS.to_bytes(int_txt.bit_length() + 7 // 8, byteorder: 'little').decode()
 read_file.columns = read_file.columns.str.strip()
 
 search_terms = []
