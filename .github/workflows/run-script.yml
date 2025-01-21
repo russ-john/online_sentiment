@@ -41,7 +41,19 @@ jobs:
       run: |
         python EmergingRiskNews.py
 
+    - name: Check for Changes
+      id: check_changes
+      run: |
+        if git diff-index --quiet HEAD --; then
+          echo "No changes to commit."
+          echo "has_changes=false" >> $GITHUB_ENV
+        else
+          echo "Changes detected."
+          echo "has_changes=true" >> $GITHUB_ENV
+        fi
+
     - name: Push generated CSV files
+      if: env.has_changes == 'true'
       run: |
         git config user.name "github-actions"
         git config user.email "github-actions@github.com"
