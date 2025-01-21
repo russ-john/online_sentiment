@@ -58,7 +58,7 @@ def process_encoded_search_terms(term):
         print(f"Error processing term {term}: {e}")
         return None
 
-# Apply the function to each element
+# apply the function to each element
 read_file['SEARCH_TERMS'] = read_file['ENCODED_TERMS'].apply(process_encoded_search_terms)
 
 search_terms = []
