@@ -72,9 +72,8 @@ keywords = []
 sentiment = []
 polarity = []
 
-
-source_df = pd.read_csv('sources.csv')
-source_list = source_df.source_name.tolist()
+# source_df = pd.read_csv('sources.csv')
+# source_list = source_df.source_name.tolist()
 
 print('Created dataframes')
 
