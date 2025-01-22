@@ -79,7 +79,7 @@ source_list = source_df.source_name.tolist()
 print('Created dataframes')
 
 url_start = 'https://news.google.com/rss/search?q={'
-url_end = '}%20when%3A7d'  # Grabs search results over the days of the week
+url_end = '}%20when%3A1d'  # Grabs search results during the day
 
 
 # Grab Google links
