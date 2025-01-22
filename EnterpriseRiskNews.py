@@ -89,27 +89,26 @@ for i, term in enumerate(read_file.SEARCH_TERMS):
     for item in soup.find_all("item"):
         source_text = item.source.text
         title_text = item.title.text
-        if source_text in source_list:
-            encoded_url = item.link.text
-            interval_time = 5
-            try:
-                decoded_url = new_decoderv1(encoded_url, interval=interval_time)
-                if decoded_url.get("status"):
-                    # enterprise_risk.extend(read_file.ENTERPRISE_RISK[i])
-                    title.extend([title_text])
-                    search_terms.extend([term])
-                    regex_pattern = re.compile('(https?):((|(\\\\))+[\w\d:#@%;$()~_?\+-=\\\.&]*)')
-                    source_search = regex_pattern.search(str(item.source))
-                    domain.extend([source_search.group(0)])
-                    source.extend([source_text])
-                    pub_text = parser.parse(item.pubDate.text)
-                    published.extend([pub_text.date()])
-                    decoded_url = decoded_url['decoded_url']
-                    link.append(decoded_url)
-                else:
-                    print("Error:", decoded_url['message'])
-            except Exception as e:
-                print(f"Error occurred: {e}")
+        encoded_url = item.link.text
+        interval_time = 5
+        try:
+            decoded_url = new_decoderv1(encoded_url, interval=interval_time)
+            if decoded_url.get("status"):
+                # enterprise_risk.extend(read_file.ENTERPRISE_RISK[i])
+                title.extend([title_text])
+                search_terms.extend([term])
+                regex_pattern = re.compile('(https?):((|(\\\\))+[\w\d:#@%;$()~_?\+-=\\\.&]*)')
+                source_search = regex_pattern.search(str(item.source))
+                domain.extend([source_search.group(0)])
+                source.extend([source_text])
+                pub_text = parser.parse(item.pubDate.text)
+                published.extend([pub_text.date()])
+                decoded_url = decoded_url['decoded_url']
+                link.append(decoded_url)
+            else:
+                print("Error:", decoded_url['message'])
+        except Exception as e:
+            print(f"Error occurred: {e}")
 
 print('Created lists')
 
