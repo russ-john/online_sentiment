@@ -50,12 +50,6 @@ for u_agent in user_agent_list:
 
     header = {'User-Agent': user_agent}
 
-# Read in Alerts file and create empty lists for storing values
-# read_file = pd.read_csv('EmergingRiskAlerts.csv')
-# read_file = pd.read_csv('EmergingRisksList.csv', encoding='utf-8')
-# read_file['EMERGING_RISK_ID'] = pd.to_numeric(read_file['EMERGING_RISK_ID'], downcast='integer', errors='coerce')
-# read_file.columns = read_file.columns.str.strip()
-
 # read in encoded alerts and create empty lists for storing values
 read_file = pd.read_csv('EmergingRisksListEncoded.csv', encoding='utf-8')
 read_file['EMERGING_RISK_ID'] = pd.to_numeric(read_file['EMERGING_RISK_ID'], downcast='integer', errors='coerce')
@@ -90,8 +84,7 @@ source_list = source_df.source_name.tolist()
 print('Created dataframes')
 
 url_start = 'https://news.google.com/rss/search?q={'
-url_end = '}%20when%3A7d'  # Grabs search results over the days of the week
-
+url_end = '}%20when%3A1d'  # Grabs search results during the day
 
 # Grab Google links
 for i, term in enumerate(read_file.SEARCH_TERMS):
@@ -100,27 +93,26 @@ for i, term in enumerate(read_file.SEARCH_TERMS):
     for item in soup.find_all("item"):
         source_text = item.source.text
         title_text = item.title.text
-        if source_text in source_list:
-            encoded_url = item.link.text
-            interval_time = 5
-            try:
-                decoded_url = new_decoderv1(encoded_url, interval=interval_time)
-                if decoded_url.get("status"):
-                    title.extend([title_text])
-                    search_terms.extend([term])
-                    # emerging_risk_id.extend(read_file.EMERGING_RISK_ID[i])
-                    regex_pattern = re.compile('(https?):((|(\\\\))+[\w\d:#@%;$()~_?\+-=\\\.&]*)')
-                    source_search = regex_pattern.search(str(item.source))
-                    domain.extend([source_search.group(0)])
-                    source.extend([source_text])
-                    pub_text = parser.parse(item.pubDate.text)
-                    published.extend([pub_text.date()])
-                    decoded_url = decoded_url['decoded_url']
-                    link.append(decoded_url)
-                else:
-                    print("Error:", decoded_url['message'])
-            except Exception as e:
-                print(f"Error occurred: {e}")
+        encoded_url = item.link.text
+        interval_time = 5
+        try:
+            decoded_url = new_decoderv1(encoded_url, interval=interval_time)
+            if decoded_url.get("status"):
+                title.extend([title_text])
+                search_terms.extend([term])
+                # emerging_risk_id.extend(read_file.EMERGING_RISK_ID[i])
+                regex_pattern = re.compile('(https?):((|(\\\\))+[\w\d:#@%;$()~_?\+-=\\\.&]*)')
+                source_search = regex_pattern.search(str(item.source))
+                domain.extend([source_search.group(0)])
+                source.extend([source_text])
+                pub_text = parser.parse(item.pubDate.text)
+                published.extend([pub_text.date()])
+                decoded_url = decoded_url['decoded_url']
+                link.append(decoded_url)
+            else:
+                print("Error:", decoded_url['message'])
+        except Exception as e:
+            print(f"Error occurred: {e}")
 
 print('Created lists')
 
