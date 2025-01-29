@@ -41,7 +41,7 @@ for u_agent in user_agent_list:
 
 # Read in Alerts file and create empty lists for storing values
 # read_file = pd.read_csv('EnterpriseRisksList.csv', encoding='utf-8')
-# read_file['EMERGING_RISK_ID'] = pd.to_numeric(read_file['ENTERPRISE_RISK_ID'], downcast='integer', errors='coerce')
+# read_file['ENTERPRISE_RISK_ID'] = pd.to_numeric(read_file['ENTERPRISE_RISK_ID'], downcast='integer', errors='coerce')
 # read_file.columns = read_file.columns.str.strip()
 
 # read in encoded alerts and create empty lists for storing values
@@ -156,7 +156,7 @@ alerts = pd.DataFrame(
 print('Created sentiments')
 
 joined_df = alerts.merge(read_file, on='SEARCH_TERMS', how='left')
-final_df = joined_df[['ENTERPRISE_RISK_ID', 'SEARCH_TERMS', 'TITLE', 'SUMMARY', 'KEYWORDS', 'PUBLISHED_DATE', 'LINK',
+final_df = joined_df[['ENTERPRISE_RISK_ID', 'TITLE', 'SUMMARY', 'KEYWORDS', 'PUBLISHED_DATE', 'LINK',
                       'SOURCE', 'SOURCE_URL', 'SENTIMENT', 'POLARITY']]
 final_df = final_df.sort_values(by='PUBLISHED_DATE', ascending=False)
 
@@ -169,9 +169,64 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 output_dir = os.path.join(script_dir, 'online_sentiment/output')
 os.makedirs(output_dir, exist_ok=True)
 
-# save inside the repo
-output_path = os.path.join(output_dir, 'enterprise_risks_online_sentiment.csv')
-final_df.to_csv(output_path, mode='a', index=False, header=False)
+# add paths for csv files
+main_csv_path = os.path.join(output_dir, 'enterprise_risks_online_sentiment.csv')
+archive_csv_path = os.path.join(output_dir, 'enterprise_risks_sentiment_archive.csv')
 
-print('DataFrame saved to {output_path}')
+# read existing main CSV if it exists
+if os.path.exists(main_csv_path):
+    existing_main_df = pd.read_csv(main_csv_path, parse_dates=['PUBLISHED_DATE'], infer_datetime_format=True)
+else:
+    existing_main_df = pd.DataFrame()
+
+# combine existing data with new data
+combined_df = pd.concat([existing_main_df, final_df], ignore_index=True)
+
+# rolling 6 mos
+six_months_ago = dt.datetime.now() - dt.timedelta(days=6*30)  # Approximation of 6 months only
+
+# Split into recent and old data
+combined_df['PUBLISHED_DATE'] = pd.to_datetime(combined_df['PUBLISHED_DATE'], errors='coerce')
+recent_df = combined_df[combined_df['PUBLISHED_DATE'] >= six_months_ago].copy()
+old_df = combined_df[combined_df['PUBLISHED_DATE'] < six_months_ago].copy()
+
+# Save recent data back to the main CSV
+# Sort by 'PUBLISHED_DATE' descending before saving
+recent_df_sorted = recent_df.sort_values(by='PUBLISHED_DATE', ascending=False)
+recent_df_sorted.to_csv(main_csv_path, index=False)
+
+print(f"Main CSV updated with data from the last 6 months: {main_csv_path}")
+
+# Prepare old data for archiving with specified columns
+archive_columns = ['ENTERPRISE_RISK_ID', 'TITLE', 'PUBLISHED_DATE', 'LINK', 'SENTIMENT', 'POLARITY', 'LAST_RUN_TIMESTAMP']
+archive_data = old_df[archive_columns].copy()
+
+# Append old data to the archive CSV
+if os.path.exists(archive_csv_path):
+    archive_data.to_csv(archive_csv_path, mode='a', index=False, header=False)
+else:
+    archive_data.to_csv(archive_csv_path, mode='w', index=False, header=True)
+
+print(f"Archived data older than 6 months to: {archive_csv_path}")
+
+# joined_df = alerts.merge(read_file, on='SEARCH_TERMS', how='left')
+# final_df = joined_df[['ENTERPRISE_RISK_ID', 'SEARCH_TERMS', 'TITLE', 'SUMMARY', 'KEYWORDS', 'PUBLISHED_DATE', 'LINK',
+#                       'SOURCE', 'SOURCE_URL', 'SENTIMENT', 'POLARITY']]
+# final_df = final_df.sort_values(by='PUBLISHED_DATE', ascending=False)
+
+# # add timestamp of the last run
+# final_df['LAST_RUN_TIMESTAMP'] = dt.datetime.now()
+# final_df['LAST_RUN_TIMESTAMP'] = pd.to_datetime(final_df['LAST_RUN_TIMESTAMP'], errors='coerce').dt.strftime('%Y-%m-%d %H:%M:%S')
+
+# # define output directory and file
+# script_dir = os.path.dirname(os.path.abspath(__file__))
+# output_dir = os.path.join(script_dir, 'online_sentiment/output')
+# os.makedirs(output_dir, exist_ok=True)
+
+# # save inside the repo
+# output_path = os.path.join(output_dir, 'enterprise_risks_online_sentiment.csv')
+# final_df.to_csv(output_path, mode='a', index=False, header=False)
+
+# print('DataFrame saved to {output_path}')
+
 
