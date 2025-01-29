@@ -150,7 +150,7 @@ alerts = pd.DataFrame(
      'SOURCE': source,
      'SOURCE_URL': domain,
      'SENTIMENT': sentiments,
-     'POLARITY': polarity
+     'POLARITY': polarity}
 )
 
 print('Created sentiments')
