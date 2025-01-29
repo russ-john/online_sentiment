@@ -175,7 +175,7 @@ archive_csv_path = os.path.join(output_dir, 'emerging_risks_sentiment_archive.cs
 
 # read existing main CSV if it exists
 if os.path.exists(main_csv_path):
-    existing_main_df = pd.read_csv(main_csv_path, parse_dates=['PUBLISHED_DATE'], infer_datetime_format=True)
+    existing_main_df = pd.read_csv(main_csv_path, parse_dates=['PUBLISHED_DATE'], infer_datetime_format=True, encoding='utf-8', errors='replace')
 else:
     existing_main_df = pd.DataFrame()
 
@@ -193,7 +193,7 @@ old_df = combined_df[combined_df['PUBLISHED_DATE'] < six_months_ago].copy()
 # Save recent data back to the main CSV
 # Sort by 'PUBLISHED_DATE' descending before saving
 recent_df_sorted = recent_df.sort_values(by='PUBLISHED_DATE', ascending=False)
-recent_df_sorted.to_csv(main_csv_path, index=False)
+recent_df_sorted.to_csv(main_csv_path, index=False, encoding='utf-8')
 
 print(f"Main CSV updated with data from the last 6 months: {main_csv_path}")
 
