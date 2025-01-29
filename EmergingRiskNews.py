@@ -11,6 +11,7 @@ import nltk
 from googlenewsdecoder import new_decoderv1
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import os
+import chardet
 
 # Set dates for today and yesterday
 now = dt.date.today()
@@ -137,61 +138,55 @@ for article_link in link:
         sentiments.append('neutral')
         polarity.append(str(neu))
 
-print('Length alert name: ', len(search_terms), ' Length Title: ', len(title), ' Length Link: ', len(link),
-      ' Length KW: ', len(keywords))
-
-alerts = pd.DataFrame(
-    {'SEARCH_TERMS': search_terms,
-     'TITLE': title,
-     'SUMMARY': summary,
-     'KEYWORDS': keywords,
-     'PUBLISHED_DATE': published,
-     'LINK': link,
-     'SOURCE': source,
-     'SOURCE_URL': domain,
-     'SENTIMENT': sentiments,
-     'POLARITY': polarity}
-)
-
 print('Created sentiments')
 
-joined_df = alerts.merge(read_file, on='SEARCH_TERMS', how='left')
+joined_df = pd.merge(alerts, read_file, on='SEARCH_TERMS', how='left')
 final_df = joined_df[['EMERGING_RISK_ID', 'TITLE', 'SUMMARY', 'KEYWORDS', 'PUBLISHED_DATE', 'LINK',
                       'SOURCE', 'SOURCE_URL', 'SENTIMENT', 'POLARITY']]
 final_df = final_df.sort_values(by='PUBLISHED_DATE', ascending=False)
 
-# add timestamp of the last run
-final_df['LAST_RUN_TIMESTAMP'] = dt.datetime.now()
-final_df['LAST_RUN_TIMESTAMP'] = pd.to_datetime(final_df['LAST_RUN_TIMESTAMP'], errors='coerce').dt.strftime('%Y-%m-%d %H:%M:%S')
+# Add timestamp of the last run
+final_df['LAST_RUN_TIMESTAMP'] = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-# define output directory and file
+# Define output directory and file
 script_dir = os.path.dirname(os.path.abspath(__file__))
 output_dir = os.path.join(script_dir, 'online_sentiment/output')
 os.makedirs(output_dir, exist_ok=True)
 
-# add paths for csv files
+# Paths for CSV files
 main_csv_path = os.path.join(output_dir, 'emerging_risks_online_sentiment.csv')
 archive_csv_path = os.path.join(output_dir, 'emerging_risks_sentiment_archive.csv')
 
-# read existing main CSV if it exists
+# Step 5: Detect file encoding and convert to UTF-8
 if os.path.exists(main_csv_path):
-    existing_main_df = pd.read_csv(main_csv_path, parse_dates=['PUBLISHED_DATE'], infer_datetime_format=True, encoding='utf-8', errors='replace')
+    with open(main_csv_path, 'rb') as f:
+        detected_encoding = chardet.detect(f.read())['encoding']
+    
+    if detected_encoding and detected_encoding.lower() != 'utf-8':
+        print(f"Converting {main_csv_path} from {detected_encoding} to UTF-8...")
+        temp_df = pd.read_csv(main_csv_path, encoding=detected_encoding)
+        temp_df.to_csv(main_csv_path, index=False, encoding='utf-8')
+
+# Read existing main CSV if it exists
+if os.path.exists(main_csv_path):
+    existing_main_df = pd.read_csv(main_csv_path, parse_dates=['PUBLISHED_DATE'], encoding='utf-8')
 else:
     existing_main_df = pd.DataFrame()
 
-# combine existing data with new data
+# Combine existing data with new data
 combined_df = pd.concat([existing_main_df, final_df], ignore_index=True)
 
-# rolling 6 mos
-six_months_ago = dt.datetime.now() - dt.timedelta(days=6*30)  # Approximation of 6 months only
+# Rolling 6-months filter
+six_months_ago = dt.datetime.now() - dt.timedelta(days=6*30)
+
+# Convert PUBLISHED_DATE to datetime
+combined_df['PUBLISHED_DATE'] = pd.to_datetime(combined_df['PUBLISHED_DATE'], errors='coerce')
 
 # Split into recent and old data
-combined_df['PUBLISHED_DATE'] = pd.to_datetime(combined_df['PUBLISHED_DATE'], errors='coerce')
 recent_df = combined_df[combined_df['PUBLISHED_DATE'] >= six_months_ago].copy()
 old_df = combined_df[combined_df['PUBLISHED_DATE'] < six_months_ago].copy()
 
 # Save recent data back to the main CSV
-# Sort by 'PUBLISHED_DATE' descending before saving
 recent_df_sorted = recent_df.sort_values(by='PUBLISHED_DATE', ascending=False)
 recent_df_sorted.to_csv(main_csv_path, index=False, encoding='utf-8')
 
@@ -203,8 +198,8 @@ archive_data = old_df[archive_columns].copy()
 
 # Append old data to the archive CSV
 if os.path.exists(archive_csv_path):
-    archive_data.to_csv(archive_csv_path, mode='a', index=False, header=False)
+    archive_data.to_csv(archive_csv_path, mode='a', index=False, header=False, encoding='utf-8')
 else:
-    archive_data.to_csv(archive_csv_path, mode='w', index=False, header=True)
+    archive_data.to_csv(archive_csv_path, mode='w', index=False, header=True, encoding='utf-8')
 
 print(f"Archived data older than 6 months to: {archive_csv_path}")
