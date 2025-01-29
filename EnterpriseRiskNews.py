@@ -175,7 +175,7 @@ archive_csv_path = os.path.join(output_dir, 'enterprise_risks_sentiment_archive.
 
 # read existing main CSV if it exists
 if os.path.exists(main_csv_path):
-    existing_main_df = pd.read_csv(main_csv_path, parse_dates=['PUBLISHED_DATE'], infer_datetime_format=True)
+    existing_main_df = pd.read_csv(main_csv_path, parse_dates=['PUBLISHED_DATE'], infer_datetime_format=True, encoding='utf-8', errors='replace')
 else:
     existing_main_df = pd.DataFrame()
 
@@ -185,23 +185,22 @@ combined_df = pd.concat([existing_main_df, final_df], ignore_index=True)
 # rolling 6 mos
 six_months_ago = dt.datetime.now() - dt.timedelta(days=6*30)  # Approximation of 6 months only
 
-# Split into recent and old data
+# split into recent and old data
 combined_df['PUBLISHED_DATE'] = pd.to_datetime(combined_df['PUBLISHED_DATE'], errors='coerce')
 recent_df = combined_df[combined_df['PUBLISHED_DATE'] >= six_months_ago].copy()
 old_df = combined_df[combined_df['PUBLISHED_DATE'] < six_months_ago].copy()
 
-# Save recent data back to the main CSV
-# Sort by 'PUBLISHED_DATE' descending before saving
+# save recent data back to the main CSV, sort before write
 recent_df_sorted = recent_df.sort_values(by='PUBLISHED_DATE', ascending=False)
-recent_df_sorted.to_csv(main_csv_path, index=False)
+recent_df_sorted.to_csv(main_csv_path, index=False, encoding='utf-8')
 
 print(f"Main CSV updated with data from the last 6 months: {main_csv_path}")
 
-# Prepare old data for archiving with specified columns
+# prepare old data for archiving with specified columns
 archive_columns = ['ENTERPRISE_RISK_ID', 'TITLE', 'PUBLISHED_DATE', 'LINK', 'SENTIMENT', 'POLARITY', 'LAST_RUN_TIMESTAMP']
 archive_data = old_df[archive_columns].copy()
 
-# Append old data to the archive CSV
+# append old data to the archive CSV
 if os.path.exists(archive_csv_path):
     archive_data.to_csv(archive_csv_path, mode='a', index=False, header=False)
 else:
