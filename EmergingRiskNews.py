@@ -140,6 +140,19 @@ for article_link in link:
 
 print('Created sentiments')
 
+alerts = pd.DataFrame(
+    {'SEARCH_TERMS': search_terms,
+     'TITLE': title,
+     'SUMMARY': summary,
+     'KEYWORDS': keywords,
+     'PUBLISHED_DATE': published,
+     'LINK': link,
+     'SOURCE': source,
+     'SOURCE_URL': domain,
+     'SENTIMENT': sentiment,
+     'POLARITY': polarity
+     })
+
 joined_df = pd.merge(alerts, read_file, on='SEARCH_TERMS', how='left')
 final_df = joined_df[['EMERGING_RISK_ID', 'TITLE', 'SUMMARY', 'KEYWORDS', 'PUBLISHED_DATE', 'LINK',
                       'SOURCE', 'SOURCE_URL', 'SENTIMENT', 'POLARITY']]
