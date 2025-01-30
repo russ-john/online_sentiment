@@ -149,7 +149,7 @@ alerts = pd.DataFrame(
      'LINK': link,
      'SOURCE': source,
      'SOURCE_URL': domain,
-     'SENTIMENT': sentiment,
+     'SENTIMENT': sentiments,
      'POLARITY': polarity
      })
 
