@@ -12,6 +12,8 @@ from googlenewsdecoder import new_decoderv1
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import os
 import chardet
+import base64
+import certifi
 
 # Set dates for today and yesterday
 now = dt.date.today()
@@ -49,15 +51,17 @@ read_file['EMERGING_RISK_ID'] = pd.to_numeric(read_file['EMERGING_RISK_ID'], dow
 
 def process_encoded_search_terms(term):
     try:
-        term_str = str(term)
-        byte_rep = term_str.encode('utf-8')
-        decoded_rep = byte_rep.decode('utf-8')
-        return decoded_rep
-    except Exception as e:
-        print(f"Error processing term {term}: {e}")
+        encoded_number = int(term)
+        byte_length = (encoded_number.bit_length() + 7) // 8
+        byte_rep = encoded_number.to_bytes(byte_length, byteorder='little')
+        decoded_text = byte_rep.decode('utf-8')
+
+        return decoded_text
+    except (ValueError, UnicodeDecodeError) as e:
+        print(f"Error decoding term {term}: {e}")
         return None
 
-# Apply the function to each element
+# apply fx
 read_file['SEARCH_TERMS'] = read_file['ENCODED_TERMS'].apply(process_encoded_search_terms)
 
 search_terms = []
@@ -140,6 +144,7 @@ for article_link in link:
 
 print('Created sentiments')
 
+# build dataframe
 alerts = pd.DataFrame(
     {'SEARCH_TERMS': search_terms,
      'TITLE': title,
@@ -152,25 +157,21 @@ alerts = pd.DataFrame(
      'SENTIMENT': sentiments,
      'POLARITY': polarity
      })
-
 joined_df = pd.merge(alerts, read_file, on='SEARCH_TERMS', how='left')
-final_df = joined_df[['EMERGING_RISK_ID', 'TITLE', 'SUMMARY', 'KEYWORDS', 'PUBLISHED_DATE', 'LINK',
-                      'SOURCE', 'SOURCE_URL', 'SENTIMENT', 'POLARITY']]
+final_df = joined_df[['EMERGING_RISK_ID', 'TITLE', 'SUMMARY', 'KEYWORDS', 'PUBLISHED_DATE', 'LINK', 'SOURCE', 'SOURCE_URL', 'SENTIMENT', 'POLARITY']]
 final_df = final_df.sort_values(by='PUBLISHED_DATE', ascending=False)
 
-# Add timestamp of the last run
+# add timestamp of the last run
 final_df['LAST_RUN_TIMESTAMP'] = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-# Define output directory and file
+# define output directory and file
 script_dir = os.path.dirname(os.path.abspath(__file__))
 output_dir = os.path.join(script_dir, 'online_sentiment/output')
 os.makedirs(output_dir, exist_ok=True)
-
-# Paths for CSV files
 main_csv_path = os.path.join(output_dir, 'emerging_risks_online_sentiment.csv')
 archive_csv_path = os.path.join(output_dir, 'emerging_risks_sentiment_archive.csv')
 
-# Step 5: Detect file encoding and convert to UTF-8
+# force encode CSVs to UTF-*
 if os.path.exists(main_csv_path):
     with open(main_csv_path, 'rb') as f:
         detected_encoding = chardet.detect(f.read())['encoding']
@@ -180,36 +181,33 @@ if os.path.exists(main_csv_path):
         temp_df = pd.read_csv(main_csv_path, encoding=detected_encoding)
         temp_df.to_csv(main_csv_path, index=False, encoding='utf-8')
 
-# Read existing main CSV if it exists
+# combine existing data with new data
 if os.path.exists(main_csv_path):
     existing_main_df = pd.read_csv(main_csv_path, parse_dates=['PUBLISHED_DATE'], encoding='utf-8')
 else:
     existing_main_df = pd.DataFrame()
-
-# Combine existing data with new data
+    
 combined_df = pd.concat([existing_main_df, final_df], ignore_index=True)
 
-# Rolling 6-months filter
+# rolling 6-months filter
 six_months_ago = dt.datetime.now() - dt.timedelta(days=6*30)
 
-# Convert PUBLISHED_DATE to datetime
+# convert PUBLISHED_DATE to datetime
 combined_df['PUBLISHED_DATE'] = pd.to_datetime(combined_df['PUBLISHED_DATE'], errors='coerce')
 
-# Split into recent and old data
+# split into recent and old data
 recent_df = combined_df[combined_df['PUBLISHED_DATE'] >= six_months_ago].copy()
 old_df = combined_df[combined_df['PUBLISHED_DATE'] < six_months_ago].copy()
 
-# Save recent data back to the main CSV
+# save recent data back to the main CSV
 recent_df_sorted = recent_df.sort_values(by='PUBLISHED_DATE', ascending=False)
 recent_df_sorted.to_csv(main_csv_path, index=False, encoding='utf-8')
 
 print(f"Main CSV updated with data from the last 6 months: {main_csv_path}")
 
-# Prepare old data for archiving with specified columns
+# prep and append old data to the archive file
 archive_columns = ['EMERGING_RISK_ID', 'TITLE', 'PUBLISHED_DATE', 'LINK', 'SENTIMENT', 'POLARITY', 'LAST_RUN_TIMESTAMP']
 archive_data = old_df[archive_columns].copy()
-
-# Append old data to the archive CSV
 if os.path.exists(archive_csv_path):
     archive_data.to_csv(archive_csv_path, mode='a', index=False, header=False, encoding='utf-8')
 else:
