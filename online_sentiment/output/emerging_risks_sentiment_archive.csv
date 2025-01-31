@@ -943,3 +943,5 @@ EMERGING_RISK_ID,TITLE,PUBLISHED_DATE,LINK,SENTIMENT,POLARITY,LAST_RUN_TIMESTAMP
 13,Should Nvidia Be Afraid of Amazon's Artificial Intelligence Chip Ambitions? - The Motley Fool,2024-02-13,https://www.fool.com/investing/2024/02/13/should-nvidia-be-afraid-of-amazons-artificial-inte/,negative,-0.146,
 7,Fact check: Debunking five false Trump claims about NATO - CNN,2024-02-13,https://www.cnn.com/2024/02/13/politics/fact-check-trump-nato/index.html,positive,0.052,
 7,"Election 2024: Trump draws fire for his comments on NATO and Russia, and other news from the Sunday shows. - The New York Times",2024-02-13,https://www.nytimes.com/live/2024/02/11/us/trump-nato-haley-biden,negative,-0.15,
+9,Nearly 100 killed as fresh antigovernment protests turn violent in Bangladesh,2024-08-04,https://thehill.com/policy/international/4810567-anti-government-protests-turn-violent-bangladesh/,negative,-0.18,
+3,Elliott says Nvidia is in a 'bubble' and AI is 'overhyped',2024-08-04,https://www.ft.com/content/24a12be1-a973-4efe-ab4f-b981aee0cd0b?shareType=nongift,negative,-0.074,
