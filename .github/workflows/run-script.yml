@@ -3,7 +3,7 @@ name: Run Python Script and Save CSV
 on:
   # Schedule the workflow to run every Monday at 6:00 AM Eastern Time (ET)
   schedule:
-    - cron: '0 10 * * 1' # 10:00 UTC is 6:00 AM ET (adjust for daylight savings)
+    - cron: '0 10 * * *' # 10:00 UTC is 6:00 AM ET (adjust for daylight savings)
   # Allow manual triggering of the workflow
   workflow_dispatch:
 
