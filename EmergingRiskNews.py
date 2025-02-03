@@ -45,7 +45,7 @@ config.request_timeout = 20
 
 header = {'User-Agent': user_agent}
 
-# Read in encoded alerts and create empty lists for storing values
+# read in encoded alerts and create empty lists for storing values
 read_file = pd.read_csv('EmergingRisksListEncoded.csv', encoding='utf-8')
 read_file['EMERGING_RISK_ID'] = pd.to_numeric(read_file['EMERGING_RISK_ID'], downcast='integer', errors='coerce')
 
@@ -171,7 +171,7 @@ os.makedirs(output_dir, exist_ok=True)
 main_csv_path = os.path.join(output_dir, 'emerging_risks_online_sentiment.csv')
 archive_csv_path = os.path.join(output_dir, 'emerging_risks_sentiment_archive.csv')
 
-# force encode CSVs to UTF-*
+# force encode CSVs to UTF-8
 if os.path.exists(main_csv_path):
     with open(main_csv_path, 'rb') as f:
         detected_encoding = chardet.detect(f.read())['encoding']
