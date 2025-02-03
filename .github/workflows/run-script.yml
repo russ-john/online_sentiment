@@ -1,10 +1,10 @@
-name: Run Python Script and Save CSV
+name: Run Python Script and Save CSV Daily
 
 on:
-  # Schedule the workflow to run every Monday at 6:00 AM Eastern Time (ET)
+  # schedule the workflow to run daily at 6:00 AM Eastern Time (ET)
   schedule:
-    - cron: '0 10 * * *' # 10:00 UTC is 6:00 AM ET (adjust for daylight savings)
-  # Allow manual triggering of the workflow
+    - cron: '0 10 * * *' # Runs every day at 10:00 UTC (6:00 AM ET)
+  # allow manual triggering of the workflow
   workflow_dispatch:
 
 jobs:
@@ -23,29 +23,24 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install wheel setuptools
         pip install -r requirements.txt
-
-    - name: Install lxml and lxml_html_clean
-      run: |
-        pip install lxml[html_clean] lxml_html_clean
+        pip install lxml[html_clean]
 
     - name: Create Output Directory
       run: mkdir -p online_sentiment/output
 
     - name: Run Enterprise Risk News script
-      run: |
-        python EnterpriseRiskNews.py
+      run: python EnterpriseRiskNews.py
 
     - name: Run Emerging Risk News script
-      run: |
-        python EmergingRiskNews.py
+      run: python EmergingRiskNews.py
 
     - name: Check for Changes
       id: check_changes
       run: |
-        if git diff-index --quiet HEAD --; then
-          echo "No changes to commit."
+        git status --porcelain
+        if [[ -z $(git status --porcelain) ]]; then
+          echo "No changes detected."
           echo "has_changes=false" >> $GITHUB_ENV
         else
           echo "Changes detected."
@@ -55,8 +50,9 @@ jobs:
     - name: Push generated CSV files
       if: env.has_changes == 'true'
       run: |
-        git config user.name "github-actions"
-        git config user.email "github-actions@github.com"
+        git config --global user.name "github-actions"
+        git config --global user.email "github-actions@github.com"
+        git pull --rebase origin main  # pull latest changes to prevent push conflicts
         git add online_sentiment/output/*.csv
         git commit -m "Update CSV files"
         git push
