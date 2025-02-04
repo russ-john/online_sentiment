@@ -29,16 +29,16 @@ jobs:
     - name: Create Output Directory
       run: mkdir -p online_sentiment/output
 
-    # activated at test
-    - name: Run Emerging Risk News script
-      run: python EmergingRiskNews.py
+    # activated at prod
+    # - name: Run Emerging Risk News script
+    #   run: python EmergingRiskNews.py
 
     - name: Run Enterprise Risk News script
       run: python EnterpriseRiskNews.py
 
-    # activated at prod
-    # - name: Run Emerging Risk News script
-    #   run: python EmergingRiskNews.py
+    # activated at test
+    - name: Run Emerging Risk News script
+      run: python EmergingRiskNews.py
 
     - name: Check for Changes
       id: check_changes
