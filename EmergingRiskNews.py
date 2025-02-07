@@ -105,6 +105,8 @@ for term in read_file.SEARCH_TERMS.dropna():
             regex_pattern = re.compile('(https?):((|(\\\\))+[\w\d:#@%;$()~_?\+-=\\\.&]*)')
             domain_search = regex_pattern.search(str(item.source))
             domain.append(domain_search.group(0) if domain_search else None)
+            
+print('Created lists')
 
 # Find article information
 for article_link in link:
@@ -121,6 +123,7 @@ for article_link in link:
         neg = analyzer['neg']
         pos = analyzer['pos']
         neu = analyzer['neu']
+        comp = analyzer['compound']
         if neg > pos or neg == -1:
             sentiments.append('negative')
             polarity.append(f'-{neg}') # appending the news that satisfies this condition
