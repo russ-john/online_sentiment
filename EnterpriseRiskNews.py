@@ -12,6 +12,7 @@ from googlenewsdecoder import new_decoderv1
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import os
 import chardet
+from urllib.parse import urlparse
 
 # Set dates for today and yesterday
 now = dt.date.today()
@@ -30,21 +31,19 @@ user_agent_list = [
 ]
 
 config = Config()
-
-# Pick a random user agent
-for u_agent in user_agent_list:   
-    user_agent = random.choice(user_agent_list)
-    config.browser_user_agent = user_agent
-    config.request_timeout = 20
-    header = {'User-Agent': user_agent}
+user_agent = random.choice(user_agent_list)
+config.browser_user_agent = user_agent
+config.request_timeout = 20
+header = {'User-Agent': user_agent}
 
 # load existing dataset to avoid re-fetching articles
 script_dir = os.path.dirname(os.path.abspath(__file__))
 output_dir = os.path.join(script_dir, 'online_sentiment/output')
 os.makedirs(output_dir, exist_ok=True)
 main_csv_path = os.path.join(output_dir, 'enterprise_risks_online_sentiment.csv')
+
 if os.path.exists(main_csv_path):
-    existing_df = pd.read_csv(main_csv_path, usecols=["LINK"], encoding="utf-8")
+    existing_df = pd.read_csv(main_csv_path, usecols=lambda x: 'LINK' in x, encoding="utf-8")
     existing_links = set(existing_df["LINK"].dropna().str.lower().str.strip())  # normalize existing links for deduping
 else:
     existing_links = set()
@@ -52,6 +51,7 @@ else:
 # encode-decode search terms
 read_file = pd.read_csv('EnterpriseRisksListEncoded.csv', encoding='utf-8')
 read_file['ENTERPRISE_RISK_ID'] = pd.to_numeric(read_file['ENTERPRISE_RISK_ID'], downcast='integer', errors='coerce')
+
 def process_encoded_search_terms(term):
     try:
         encoded_number = int(term)
@@ -59,7 +59,7 @@ def process_encoded_search_terms(term):
         byte_rep = encoded_number.to_bytes(byte_length, byteorder='little')
         decoded_text = byte_rep.decode('utf-8')
         return decoded_text
-    except (ValueError, UnicodeDecodeError):
+    except (ValueError, UnicodeDecodeError, OverflowError):
         return None
 
 read_file['SEARCH_TERMS'] = read_file['ENCODED_TERMS'].apply(process_encoded_search_terms)
@@ -76,8 +76,6 @@ keywords = []
 sentiment = []
 polarity = []
 
-
-
 # Grab Google links
 url_start = 'https://news.google.com/rss/search?q={'
 url_end = '}%20when%3A1d'  # fetch only recent articles
@@ -90,48 +88,56 @@ for term in read_file.SEARCH_TERMS.dropna():
         encoded_url = item.link.text.strip()
         source_text = item.source.text.strip()
         decoded_url = new_decoderv1(encoded_url, interval=5)
+        
         if decoded_url.get("status"):
-            decoded_url = decoded_url['decoded_url'].strip().lower()  # normalize link
-            # **SKIP IF LINK ALREADY EXISTS**
+            decoded_url = decoded_url['decoded_url'].strip().lower()  # normalize link for deduping later
             if decoded_url in existing_links:
                 continue  # skip articles that have already been collected
+
             search_terms.append(term)
             title.append(title_text)
             source.append(source_text)
             link.append(decoded_url)
             published.append(parser.parse(item.pubDate.text).date())
-            regex_pattern = re.compile('(https?):((|(\\\\))+[\w\d:#@%;$()~_?\+-=\\\.&]*)')
-            domain_search = regex_pattern.search(str(item.source))
-            domain.append(domain_search.group(0) if domain_search else None)
+            domain.append(domain_search.group(0))
+        else:
+            print("Error:", decoded_url['message'])
 
 print('Created lists')
 
 # Find article information
 for article_link in link:
-    article = Article(article_link, config=config) # providing the link
+    article = Article(article_link, config=config)
     try:
-        article.download() # downloading the article
-        article.parse()  #parsing the article
-        article.nlp() # performing natural language processing (nlp)
-    except:
-        pass
+        article.download()
+        article.parse()
+        article.nlp()
         summary.append(article.summary)
         keywords.append(article.keywords)
+
         analyzer = SentimentIntensityAnalyzer().polarity_scores(article.summary)
         neg = analyzer['neg']
         neu = analyzer['neu']
         pos = analyzer['pos']
         comp = analyzer['compound']
+
         if neg > pos or neg == -1:
             sentiment.append('negative')
-            polarity.append(f'-{neg}') # appending the news that satisfies this condition
+            polarity.append(f'-{neg}')
         elif pos > neg:
             sentiment.append('positive')
             polarity.append(f'+{pos}')
         else:
             sentiment.append('neutral')
             polarity.append(str(neu))
-            
+
+    except Exception as e:
+        print(f"Error processing article {article_link}: {e}")
+        summary.append(None)
+        keywords.append(None)
+        sentiment.append('neutral')
+        polarity.append('0')
+
 print('Length alert name: ', len(search_terms), ' Length Title: ', len(title), ' Length Link: ', len(link),
       ' Length KW: ', len(keywords))
 
@@ -159,11 +165,14 @@ if os.path.exists(main_csv_path):
 else:
     existing_main_df = pd.DataFrame()
 
-combined_df = pd.concat([existing_main_df, final_df], ignore_index=True).drop_duplicates(subset=['TITLE', 'LINK'])
+combined_df = pd.concat([existing_main_df, final_df], ignore_index=True).drop_duplicates(subset=['TITLE', 'LINK', 'PUBLISHED_DATE'])
 
 # rolling 6-month filter
 six_months_ago = dt.datetime.now() - dt.timedelta(days=6 * 30)
 combined_df['PUBLISHED_DATE'] = pd.to_datetime(combined_df['PUBLISHED_DATE'], errors='coerce')
+
+if combined_df['PUBLISHED_DATE'].isna().any():
+    print("WARNING!!! Some rows have invalid PUBLISHED_DATE values.")
 
 # split recent and old data
 recent_df = combined_df[combined_df['PUBLISHED_DATE'] >= six_months_ago].copy()
