@@ -1,9 +1,9 @@
 name: Daily Data Update with Refresh Log
 
 on:
-  # Runs daily at 6:00 AM Eastern Time (ET)
+  # Runs daily at 4AM Eastern Time (ET)
   schedule:
-    - cron: '0 10 * * *'  # Runs every day at 10:00 UTC (6:00 AM ET)
+    - cron: '0 8 * * *'
   workflow_dispatch:  # Allow manual triggering
 
 jobs:
