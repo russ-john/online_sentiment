@@ -30,13 +30,10 @@ user_agent_list = [
 ]
 
 config = Config()
-
-# Pick a random user agent
-for u_agent in user_agent_list:
-    user_agent = random.choice(user_agent_list)
-    config.browser_user_agent = user_agent
-    config.request_timeout = 20
-    header = {'User-Agent': user_agent}
+user_agent = random.choice(user_agent_list)
+config.browser_user_agent = user_agent
+config.request_timeout = 20
+header = {'User-Agent': user_agent}
 
 # load existing dataset to avoid duplicate fetching
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -44,7 +41,7 @@ output_dir = os.path.join(script_dir, 'online_sentiment/output')
 main_csv_path = os.path.join(output_dir, 'emerging_risks_online_sentiment.csv')
 
 if os.path.exists(main_csv_path):
-    existing_df = pd.read_csv(main_csv_path, usecols=["LINK"], encoding="utf-8")
+    existing_df = pd.read_csv(main_csv_path, usecols=lambda x: 'LINK' in x, encoding="utf-8")
     existing_links = set(existing_df["LINK"].dropna().str.lower().str.strip())  # normalize existing links for efficient processing
 else:
     existing_links = set()
@@ -60,7 +57,7 @@ def process_encoded_search_terms(term):
         byte_rep = encoded_number.to_bytes(byte_length, byteorder='little')
         decoded_text = byte_rep.decode('utf-8')
         return decoded_text
-    except (ValueError, UnicodeDecodeError):
+    except (ValueError, UnicodeDecodeError, OverflowError):
         return None
 
 read_file['SEARCH_TERMS'] = read_file['ENCODED_TERMS'].apply(process_encoded_search_terms)
@@ -77,62 +74,71 @@ keywords = []
 sentiments = []
 polarity = []
 
-
 # Grab Google links
 url_start = 'https://news.google.com/rss/search?q={'
 url_end = '}%20when%3A1d'  # fetch only recent articles
 
 for term in read_file.SEARCH_TERMS.dropna():
-    req = requests.get(url=url_start + term + url_end, headers=header)
-    soup = BeautifulSoup(req.text, 'xml')
-    for item in soup.find_all("item"):
-        title_text = item.title.text.strip()
-        encoded_url = item.link.text.strip()
-        source_text = item.source.text.strip()
-        interval_time = 5
-        # decode the Google News URL
-        decoded_url = new_decoderv1(encoded_url, interval=interval_time)
-        if decoded_url.get("status"):
-            decoded_url = decoded_url['decoded_url'].strip().lower()  # normalize link to check duplicates
-            # SKIP IF LINK ALREADY EXISTS!
-            if decoded_url in existing_links:
-                continue  # skip if article was once collected
-            title.append(title_text)
-            search_terms.append(term)
-            source.append(source_text)
-            link.append(decoded_url)
-            published.append(parser.parse(item.pubDate.text).date())
-            regex_pattern = re.compile('(https?):((|(\\\\))+[\w\d:#@%;$()~_?\+-=\\\.&]*)')
-            domain_search = regex_pattern.search(str(item.source))
-            domain.append(domain_search.group(0) if domain_search else None)
-            
+    try:
+        req = requests.get(url=url_start + term + url_end, headers=header)
+        soup = BeautifulSoup(req.text, 'xml')
+        for item in soup.find_all("item"):
+            title_text = item.title.text.strip()
+            encoded_url = item.link.text.strip()
+            source_text = item.source.text.strip()
+            interval_time = 5
+            decoded_url = new_decoderv1(encoded_url, interval=interval_time)
+
+            if decoded_url.get("status"):
+                decoded_url = decoded_url['decoded_url'].strip().lower()  # normalize link to check duplicates
+                if decoded_url in existing_links:
+                    continue  # skip if article was previously collected
+                title.append(title_text)
+                search_terms.append(term)
+                source.append(source_text)
+                link.append(decoded_url)
+                #date has to work for deduping
+                try:
+                    published.append(parser.parse(item.pubDate.text).date())
+                except (ValueError, TypeError):
+                    published.append(None)
+                    print(f"WARNING! Date Error: {item.pubDate.text}")
+
+                regex_pattern = re.compile('(https?):((|(\\\\))+[\w\d:#@%;$()~_?\+-=\\\.&]*)')
+                domain_search = regex_pattern.search(str(item.source))
+                domain.append(domain_search.group(0) if domain_search else None) # prevent AttributeError: 'NoneType'
+            else:
+                print("Error:", decoded_url['message'])
+    except requests.exceptions.RequestException as e:
+        print(f"Request error for term {term}: {e}")
+
 print('Created lists')
 
 # Find article information
 for article_link in link:
-    article = Article(article_link, config=config) # providing the link
+    article = Article(article_link, config=config)
     try:
-        article.download() # downloading the article
-        article.parse() # parsing the article
-        article.nlp() # performing natural language processing (nlp)
+        article.download()
+        article.parse()
+        article.nlp()
     except:
         pass
-        summary.append(article.summary)
-        keywords.append(article.keywords)
-        analyzer = SentimentIntensityAnalyzer().polarity_scores(article.summary)
-        neg = analyzer['neg']
-        pos = analyzer['pos']
-        neu = analyzer['neu']
-        comp = analyzer['compound']
-        if neg > pos or neg == -1:
-            sentiments.append('negative')
-            polarity.append(f'-{neg}') # appending the news that satisfies this condition
-        elif neg < pos:
-            sentiments.append('positive')
-            polarity.append(f'+{pos}')
-        else:
-            sentiments.append('neutral')
-            polarity.append(str(neu))
+    summary.append(article.summary)
+    keywords.append(article.keywords)
+    analyzer = SentimentIntensityAnalyzer().polarity_scores(article.summary)
+    neg = analyzer['neg']
+    pos = analyzer['pos']
+    neu = analyzer['neu']
+    comp = analyzer['compound']
+    if neg > pos or neg == -1:
+        sentiments.append('negative')
+        polarity.append(f'-{neg}')
+    elif neg < pos:
+        sentiments.append('positive')
+        polarity.append(f'+{pos}')
+    else:
+        sentiments.append('neutral')
+        polarity.append(str(neu))
 
 print('Length alert name: ', len(search_terms), ' Length Title: ', len(title), ' Length Link: ', len(link),
       ' Length KW: ', len(keywords))
@@ -163,24 +169,17 @@ if os.path.exists(main_csv_path):
 else:
     existing_main_df = pd.DataFrame()
 
-combined_df = pd.concat([existing_main_df, final_df], ignore_index=True).drop_duplicates(subset=['TITLE', 'LINK'])
+combined_df = pd.concat([existing_main_df, final_df], ignore_index=True).drop_duplicates(subset=['TITLE', 'LINK', 'PUBLISHED_DATE'])
 
 # rolling 6-month filter
 six_months_ago = dt.datetime.now() - dt.timedelta(days=6 * 30)
 combined_df['PUBLISHED_DATE'] = pd.to_datetime(combined_df['PUBLISHED_DATE'], errors='coerce')
 
-# split recent and old data
-recent_df = combined_df[combined_df['PUBLISHED_DATE'] >= six_months_ago].copy()
-old_df = combined_df[combined_df['PUBLISHED_DATE'] < six_months_ago].copy()
+if combined_df['PUBLISHED_DATE'].isna().any():
+    print("Warning: Some rows have invalid PUBLISHED_DATE values.")
 
-# save recent data back to the main CSV
+# save recent data
+recent_df = combined_df[combined_df['PUBLISHED_DATE'] >= six_months_ago].copy()
 recent_df.sort_values(by='PUBLISHED_DATE', ascending=False).to_csv(main_csv_path, index=False, encoding='utf-8')
 
 print(f"Updated main CSV with {len(recent_df)} records.")
-
-# archive old data
-archive_csv_path = os.path.join(output_dir, 'emerging_risks_sentiment_archive.csv')
-archive_data = old_df[['EMERGING_RISK_ID', 'TITLE', 'PUBLISHED_DATE', 'LINK', 'SENTIMENT', 'POLARITY', 'LAST_RUN_TIMESTAMP']]
-archive_data.to_csv(archive_csv_path, mode='a', index=False, header=not os.path.exists(archive_csv_path), encoding='utf-8')
-
-print(f"Archived {len(old_df)} records.")
