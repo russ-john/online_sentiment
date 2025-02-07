@@ -81,7 +81,6 @@ url_end = '}%20when%3A1d'  # fetch only recent articles
 for term in read_file.SEARCH_TERMS.dropna():
     try:
         req = requests.get(url=url_start + term + url_end, headers=header)
-        req.raise_for_status()  # Ensure it raises an error for HTTP failures
         soup = BeautifulSoup(req.text, 'xml')
         for item in soup.find_all("item"):
             title_text = item.title.text.strip()
