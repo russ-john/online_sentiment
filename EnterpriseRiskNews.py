@@ -30,9 +30,13 @@ user_agent_list = [
 ]
 
 config = Config()
-config.browser_user_agent = random.choice(user_agent_list)
-config.request_timeout = 20
-header = {'User-Agent': config.browser_user_agent}
+
+# Pick a random user agent
+for u_agent in user_agent_list:   
+    user_agent = random.choice(user_agent_list)
+    config.browser_user_agent = user_agent
+    config.request_timeout = 20
+    header = {'User-Agent': user_agent}
 
 # load existing dataset to avoid re-fetching articles
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -41,7 +45,7 @@ os.makedirs(output_dir, exist_ok=True)
 main_csv_path = os.path.join(output_dir, 'enterprise_risks_online_sentiment.csv')
 if os.path.exists(main_csv_path):
     existing_df = pd.read_csv(main_csv_path, usecols=["LINK"], encoding="utf-8")
-    existing_links = set(existing_df["LINK"].dropna().str.lower().str.strip())  # Normalize existing links
+    existing_links = set(existing_df["LINK"].dropna().str.lower().str.strip())  # normalize existing links for deduping
 else:
     existing_links = set()
 
@@ -61,18 +65,26 @@ def process_encoded_search_terms(term):
 read_file['SEARCH_TERMS'] = read_file['ENCODED_TERMS'].apply(process_encoded_search_terms)
 
 # prep lists for new entries
-search_terms, title, published, link, domain, source, summary, keywords, sentiment, polarity = ([] for _ in range(10))
+search_terms = []
+title = []
+published = []
+link = []
+domain = []
+source = []
+summary = []
+keywords = []
+sentiment = []
+polarity = []
 
-print('Fetching Google News articles...')
 
+
+# Grab Google links
 url_start = 'https://news.google.com/rss/search?q={'
 url_end = '}%20when%3A1d'  # fetch only recent articles
 
-# Grab Google News links
 for term in read_file.SEARCH_TERMS.dropna():
     req = requests.get(url=url_start + term + url_end, headers=header)
     soup = BeautifulSoup(req.text, 'xml')
-
     for item in soup.find_all("item"):
         title_text = item.title.text.strip()
         encoded_url = item.link.text.strip()
@@ -82,7 +94,7 @@ for term in read_file.SEARCH_TERMS.dropna():
             decoded_url = decoded_url['decoded_url'].strip().lower()  # normalize link
             # **SKIP IF LINK ALREADY EXISTS**
             if decoded_url in existing_links:
-                continue  # Skip articles that have already been collected
+                continue  # skip articles that have already been collected
             search_terms.append(term)
             title.append(title_text)
             source.append(source_text)
@@ -92,32 +104,37 @@ for term in read_file.SEARCH_TERMS.dropna():
             domain_search = regex_pattern.search(str(item.source))
             domain.append(domain_search.group(0) if domain_search else None)
 
+print('Created lists')
+
+# Find article information
 for article_link in link:
-    article = Article(article_link, config=config)
+    article = Article(article_link, config=config) # providing the link
     try:
-        article.download()
-        article.parse()
-        article.nlp()
+        article.download() # downloading the article
+        article.parse()  #parsing the article
+        article.nlp() # performing natural language processing (nlp)
+    except:
+        pass
         summary.append(article.summary)
         keywords.append(article.keywords)
         analyzer = SentimentIntensityAnalyzer().polarity_scores(article.summary)
-        neg, pos, neu = analyzer['neg'], analyzer['pos'], analyzer['neu']
+        neg = analyzer['neg']
+        neu = analyzer['neu']
+        pos = analyzer['pos']
+        comp = analyzer['compound']
         if neg > pos or neg == -1:
             sentiment.append('negative')
-            polarity.append(f'-{neg}')
+            polarity.append(f'-{neg}') # appending the news that satisfies this condition
         elif pos > neg:
             sentiment.append('positive')
             polarity.append(f'+{pos}')
         else:
             sentiment.append('neutral')
             polarity.append(str(neu))
-    except:
-        summary.append(None)
-        keywords.append(None)
-        sentiment.append(None)
-        polarity.append(None)
+            
+print('Length alert name: ', len(search_terms), ' Length Title: ', len(title), ' Length Link: ', len(link),
+      ' Length KW: ', len(keywords))
 
-# Create DataFrame
 alerts = pd.DataFrame({
     'SEARCH_TERMS': search_terms,
     'TITLE': title,
