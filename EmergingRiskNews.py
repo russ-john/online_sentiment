@@ -34,10 +34,11 @@ user_agent_list = [
 config = Config()
 
 # Pick a random user agent
-user_agent = random.choice(user_agent_list)
-config.browser_user_agent = user_agent
-config.request_timeout = 20
-header = {'User-Agent': user_agent}
+for u_agent in user_agent_list:
+    user_agent = random.choice(user_agent_list)
+    config.browser_user_agent = user_agent
+    config.request_timeout = 20
+    header = {'User-Agent': user_agent}
 
 # load existing dataset to avoid duplicate fetching
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -67,14 +68,22 @@ def process_encoded_search_terms(term):
 read_file['SEARCH_TERMS'] = read_file['ENCODED_TERMS'].apply(process_encoded_search_terms)
 
 # prep lists to store new entries
-search_terms, title, published, link, domain, source, summary, keywords, sentiments, polarity = ([] for _ in range(10))
+search_terms = []
+title = []
+published = []
+link = []
+domain = []
+source = []
+summary = []
+keywords = []
+sentiments = []
+polarity = []
 
-print('Fetching Google News articles...')
 
+# Grab Google links
 url_start = 'https://news.google.com/rss/search?q={'
 url_end = '}%20when%3A1d'  # fetch only recent articles
 
-# fetch Google News links
 for term in read_file.SEARCH_TERMS.dropna():
     req = requests.get(url=url_start + term + url_end, headers=header)
     soup = BeautifulSoup(req.text, 'xml')
@@ -82,15 +91,16 @@ for term in read_file.SEARCH_TERMS.dropna():
         title_text = item.title.text.strip()
         encoded_url = item.link.text.strip()
         source_text = item.source.text.strip()
+        interval_time = 5
         # decode the Google News URL
-        decoded_url = new_decoderv1(encoded_url, interval=5)
+        decoded_url = new_decoderv1(encoded_url, interval=interval_time)
         if decoded_url.get("status"):
-            decoded_url = decoded_url['decoded_url'].strip().lower()  # normalize link for checking
-            # **SKIP IF LINK ALREADY EXISTS**
+            decoded_url = decoded_url['decoded_url'].strip().lower()  # normalize link to check duplicates
+            # SKIP IF LINK ALREADY EXISTS!
             if decoded_url in existing_links:
                 continue  # skip if article was once collected
-            search_terms.append(term)
             title.append(title_text)
+            search_terms.append(term)
             source.append(source_text)
             link.append(decoded_url)
             published.append(parser.parse(item.pubDate.text).date())
@@ -105,26 +115,27 @@ for article_link in link:
         article.download() # downloading the article
         article.parse() # parsing the article
         article.nlp() # performing natural language processing (nlp)
+    except:
+        pass
         summary.append(article.summary)
         keywords.append(article.keywords)
         analyzer = SentimentIntensityAnalyzer().polarity_scores(article.summary)
-        neg, pos, neu = analyzer['neg'], analyzer['pos'], analyzer['neu']
+        neg = analyzer['neg']
+        pos = analyzer['pos']
+        neu = analyzer['neu']
         if neg > pos or neg == -1:
             sentiments.append('negative')
-            polarity.append(f'-{neg}')
-        elif pos > neg:
+            polarity.append(f'-{neg}') # appending the news that satisfies this condition
+        elif neg < pos:
             sentiments.append('positive')
             polarity.append(f'+{pos}')
         else:
             sentiments.append('neutral')
             polarity.append(str(neu))
-    except:
-        summary.append(None)
-        keywords.append(None)
-        sentiments.append(None)
-        polarity.append(None)
 
-# Create DataFrame
+print('Length alert name: ', len(search_terms), ' Length Title: ', len(title), ' Length Link: ', len(link),
+      ' Length KW: ', len(keywords))
+
 alerts = pd.DataFrame({
     'SEARCH_TERMS': search_terms,
     'TITLE': title,
@@ -137,6 +148,8 @@ alerts = pd.DataFrame({
     'SENTIMENT': sentiments,
     'POLARITY': polarity
 })
+
+print('Created sentiments')
 
 # merge new alerts with search terms data
 joined_df = pd.merge(alerts, read_file, on='SEARCH_TERMS', how='left')
