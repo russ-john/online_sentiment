@@ -12,8 +12,6 @@ from googlenewsdecoder import new_decoderv1
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import os
 import chardet
-import base64
-import certifi
 
 # Set dates for today and yesterday
 now = dt.date.today()
