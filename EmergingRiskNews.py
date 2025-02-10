@@ -12,6 +12,7 @@ from googlenewsdecoder import new_decoderv1
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import os
 import chardet
+from urllib.parse import urlparse
 
 # Set dates for today and yesterday
 now = dt.date.today()
@@ -74,6 +75,14 @@ keywords = []
 sentiments = []
 polarity = []
 
+# load filter_out_sources.csv file
+filter_out_path = 'filter_out_sources.csv'
+if os.path.exists(filter_out_path):
+    filter_out_df = pd.read_csv(filter_out_path, header=None, encoding='utf-8')  # No header in CSV
+    filtered_sources = set(filter_out_df.iloc[:, 0].dropna().str.lower().str.strip())  # Use first column
+else:
+    filtered_sources = set()
+    
 # Grab Google links
 url_start = 'https://news.google.com/rss/search?q={'
 url_end = '}%20when%3A1d'  # fetch only recent articles
@@ -85,7 +94,16 @@ for term in read_file.SEARCH_TERMS.dropna():
         for item in soup.find_all("item"):
             title_text = item.title.text.strip()
             encoded_url = item.link.text.strip()
-            source_text = item.source.text.strip()
+            source_text = item.source.text.strip().lower()
+            
+            # extract the domain directly from the encoded URL without decoding
+            domain_name = urlparse(encoded_url).netloc.replace("www.", "").lower()
+
+            # check if domain is in filter-out list BEFORE requesting the actual article
+            if domain_name in filtered_sources:
+                print(f"skipping article from {domain_name}")
+                continue  # Skip this source before decoding or making a request for efficiency
+
             interval_time = 5
             decoded_url = new_decoderv1(encoded_url, interval=interval_time)
 
