@@ -126,19 +126,16 @@ for article_link in link:
     summary.append(article.summary)
     keywords.append(article.keywords)
     analyzer = SentimentIntensityAnalyzer().polarity_scores(article.summary)
-    neg = analyzer['neg']
-    pos = analyzer['pos']
-    neu = analyzer['neu']
     comp = analyzer['compound']
-    if neg > pos or neg == -1:
+    if comp <= -0.05:
         sentiments.append('negative')
-        polarity.append(f'-{neg}')
-    elif neg < pos:
-        sentiments.append('positive')
-        polarity.append(f'+{pos}')
-    else:
+        polarity.append(f'{comp}')
+    elif -0.05 < comp < 0.05:
         sentiments.append('neutral')
-        polarity.append(str(neu))
+        polarity.append(f'{comp}')
+    elif comp >= 0.05:
+        sentiments.append('positive')
+        polarity.append(f'{comp}')
 
 print('Length alert name: ', len(search_terms), ' Length Title: ', len(title), ' Length Link: ', len(link),
       ' Length KW: ', len(keywords))
