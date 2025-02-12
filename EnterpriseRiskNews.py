@@ -38,7 +38,7 @@ header = {'User-Agent': user_agent}
 # load existing dataset to avoid duplicate fetching
 script_dir = os.path.dirname(os.path.abspath(__file__))
 output_dir = os.path.join(script_dir, 'online_sentiment/output')
-main_csv_path = os.path.join(output_dir, 'emerging_risks_online_sentiment.csv')
+main_csv_path = os.path.join(output_dir, 'enterprise_risks_online_sentiment.csv')
 
 if os.path.exists(main_csv_path):
     existing_df = pd.read_csv(main_csv_path, usecols=lambda x: 'LINK' in x, encoding="utf-8")
@@ -47,8 +47,8 @@ else:
     existing_links = set()
 
 # encode-decode search terms
-read_file = pd.read_csv('EmergingRisksListEncoded.csv', encoding='utf-8')
-read_file['EMERGING_RISK_ID'] = pd.to_numeric(read_file['EMERGING_RISK_ID'], downcast='integer', errors='coerce')
+read_file = pd.read_csv('EnterpriseRisksListEncoded.csv', encoding='utf-8')
+read_file['ENTERPRISE_RISK_ID'] = pd.to_numeric(read_file['ENTERPRISE_RISK_ID'], downcast='integer', errors='coerce')
 
 def process_encoded_search_terms(term):
     try:
@@ -156,7 +156,7 @@ print('Created sentiments')
 
 # merge new alerts with search terms data
 joined_df = pd.merge(alerts, read_file, on='SEARCH_TERMS', how='left')
-final_df = joined_df[['EMERGING_RISK_ID', 'TITLE', 'SUMMARY', 'KEYWORDS', 'PUBLISHED_DATE', 'LINK', 'SOURCE', 'SOURCE_URL', 'SENTIMENT', 'POLARITY']]
+final_df = joined_df[['ENTERPRISE_RISK_ID', 'TITLE', 'SUMMARY', 'KEYWORDS', 'PUBLISHED_DATE', 'LINK', 'SOURCE', 'SOURCE_URL', 'SENTIMENT', 'POLARITY']]
 final_df['LAST_RUN_TIMESTAMP'] = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 # load existing data and combine with new entries
@@ -184,8 +184,8 @@ recent_df.sort_values(by='PUBLISHED_DATE', ascending=False).to_csv(main_csv_path
 print(f"Updated main CSV with {len(recent_df)} records.")
 
 # archive old data
-archive_csv_path = os.path.join(output_dir, 'emerging_risks_sentiment_archive.csv')
-archive_data = old_df[['EMERGING_RISK_ID', 'TITLE', 'PUBLISHED_DATE', 'LINK', 'SENTIMENT', 'POLARITY', 'LAST_RUN_TIMESTAMP']]
+archive_csv_path = os.path.join(output_dir, 'enterprise_risks_sentiment_archive.csv')
+archive_data = old_df[['ENTERPRISE_RISK_ID', 'TITLE', 'PUBLISHED_DATE', 'LINK', 'SENTIMENT', 'POLARITY', 'LAST_RUN_TIMESTAMP']]
 archive_data.to_csv(archive_csv_path, mode='a', index=False, header=not os.path.exists(archive_csv_path), encoding='utf-8')
 
 print(f"Archived {len(old_df)} records.")
