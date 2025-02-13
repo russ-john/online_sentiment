@@ -95,14 +95,23 @@ for term in read_file.SEARCH_TERMS.dropna():
             title_text = item.title.text.strip()
             encoded_url = item.link.text.strip()
             source_text = item.source.text.strip().lower()
-            
-            # extract the domain directly from the encoded URL without decoding
-            domain_name = urlparse(encoded_url).netloc.replace("www.", "").lower()
 
-            # check if domain is in filter-out list BEFORE requesting the actual article
-            if domain_name in filtered_sources:
-                print(f"skipping article from {domain_name}")
-                continue  # Skip this source before decoding or making a request for efficiency
+            # FILTER LOGIC SEQUENCE
+            # 1. Valid domain extension only
+            valid_extensions = ('.com', '.edu', '.org', '.net')
+            if not encoded_url.lower().endswith(valid_extensions):
+                print(f"Skipping {encoded_url} (Invalid domain extension)")
+                continue  #skip if true
+            
+            # 2. Check if the source name is in filter-out list
+            if source_text in filtered_sources:
+                print(f"Skipping article from {source_text} (Filtered source)")
+                continue  # skip if true
+            
+            # 3. Skip articles if the URL contains '/en/' (translated articles)
+            if "/en/" in encoded_url.lower():
+                print(f"Skipping {encoded_url} (Detected translated article)")
+                continue  # skip if true
 
             interval_time = 5
             decoded_url = new_decoderv1(encoded_url, interval=interval_time)
