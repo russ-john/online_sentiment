@@ -91,17 +91,17 @@ for term in read_file.SEARCH_TERMS.dropna():
             # 1. Valid domain extension only
             valid_extensions = ('.com', '.edu', '.org', '.net')
             if not encoded_url.lower().endswith(valid_extensions):
-                print(f"Skipping {encoded_url} (Invalid domain extension)")
+                print(f"Skipping {encoded_url} - non-standard domain extension")
                 continue  #skip if true
             
             # 2. Check if the source name is in filter-out list
             if source_text in filtered_sources:
-                print(f"Skipping article from {source_text} (Filtered source)")
+                print(f"Skipping article from {source_text} - source filtered out")
                 continue  # skip if true
             
             # 3. Skip articles if the URL contains '/en/' (translated articles)
             if "/en/" in encoded_url.lower():
-                print(f"Skipping {encoded_url} (Detected translated article)")
+                print(f"Skipping {encoded_url} - non-English, translated article")
                 continue  # skip if true
 
             interval_time = 5
