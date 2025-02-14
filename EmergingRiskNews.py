@@ -98,6 +98,8 @@ for term in read_file.SEARCH_TERMS.dropna():
 
             # FILTER LOGIC SEQUENCE
             # 1. Valid domain extension only
+            parsed_url = urlparse(encoded_url)
+            domain_name = parsed_url.netloc.lower()
             valid_extensions = ('.com', '.edu', '.org', '.net')
             if not encoded_url.lower().endswith(valid_extensions):
                 print(f"Skipping {encoded_url} - non-standard domain extension")
