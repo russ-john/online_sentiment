@@ -152,7 +152,7 @@ for term in read_file.SEARCH_TERMS.dropna():
                 domain_search = regex_pattern.search(str(item.source))
                 domain.append(domain_search.group(0) if domain_search else None) # prevent AttributeError: 'NoneType'
             else:
-                print("Error:", decoded_url['message']")
+                print("Error:", decoded_url['message'])
     except requests.exceptions.RequestException as e:
         print(f"Request error for term {term}: {e}")
 
