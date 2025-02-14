@@ -12,6 +12,7 @@ from googlenewsdecoder import new_decoderv1
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import os
 import chardet
+from urllib.parse import urlparse
 
 # Set dates for today and yesterday
 now = dt.date.today()
@@ -89,6 +90,8 @@ for term in read_file.SEARCH_TERMS.dropna():
 
             # FILTER LOGIC SEQUENCE
             # 1. Valid domain extension only
+            parsed_url = urlparse(encoded_url)
+            domain_name = parsed_url.netloc.lower()
             valid_extensions = ('.com', '.edu', '.org', '.net')
             if not encoded_url.lower().endswith(valid_extensions):
                 print(f"Skipping {encoded_url} - non-standard domain extension")
