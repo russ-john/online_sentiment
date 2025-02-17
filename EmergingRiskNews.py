@@ -78,8 +78,8 @@ polarity = []
 # load filter_out_sources.csv file
 filter_out_path = 'filter_out_sources.csv'
 if os.path.exists(filter_out_path):
-    filter_out_df = pd.read_csv(filter_out_path, header=None, encoding='utf-8')  # No header in CSV
-    filtered_sources = set(filter_out_df.iloc[:, 0].dropna().str.lower().str.strip())  # Use first column
+    filter_out_df = pd.read_csv(filter_out_path, encoding='utf-8')
+    filtered_sources = set(filter_out_df.iloc[:, 0].dropna().str.lower().str.strip())  #only 1 column, use it.
 else:
     filtered_sources = set()
     
