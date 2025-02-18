@@ -52,14 +52,14 @@ jobs:
       run: |
         echo "Last refresh: $(date)" > last_refresh.txt
 
-    - name: Push Updates
+    - name: Pull Latest Changes and Push Updates
       if: env.has_changes == 'true'
       run: |
         git config --global user.name "GitHub Actions Bot"
         git config --global user.email "noreply@github.com"
         git stash
-        git pull --rebase origin main
+        git pull --rebase origin main || echo "Pull failed, continuing with commit"
         git stash pop || echo "No stashed changes to apply"
         git add .
         git commit -m "Daily update: $(date)" || echo "No changes to commit"
-        git push origin main
+        git push origin main || echo "Git push failed!"
