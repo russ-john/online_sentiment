@@ -95,26 +95,7 @@ for term in read_file.SEARCH_TERMS.dropna():
             title_text = item.title.text.strip()
             encoded_url = item.link.text.strip()
             source_text = item.source.text.strip().lower()
-
-            # # FILTER LOGIC SEQUENCE
-            # # 1. Valid domain extension only
-            # parsed_url = urlparse(encoded_url)
-            # domain_name = parsed_url.netloc.lower()
-            # valid_extensions = ('.com', '.edu', '.org', '.net')
-            # if not encoded_url.lower().endswith(valid_extensions):
-            #     print(f"Skipping {encoded_url} - non-standard domain extension")
-            #     continue  #skip if true
             
-            # # 2. Check if the source name is in filter-out list
-            # if source_text in filtered_sources:
-            #     print(f"Skipping article from {source_text} - source filtered out")
-            #     continue  # skip if true
-            
-            # # 3. Skip articles if the URL contains '/en/' (translated articles)
-            # if "/en/" in encoded_url.lower():
-            #     print(f"Skipping {encoded_url} - non-English, translated article")
-            #     continue  # skip if true
-
             interval_time = 5
             decoded_url = new_decoderv1(encoded_url, interval=interval_time)
 
@@ -163,31 +144,6 @@ for term in read_file.SEARCH_TERMS.dropna():
                 print("Error:", decoded_url['message'])
     except requests.exceptions.RequestException as e:
         print(f"Request error for term {term}: {e}")
-
-
-    #         if decoded_url.get("status"):
-    #             decoded_url = decoded_url['decoded_url'].strip().lower()  # normalize link to check duplicates
-    #             if decoded_url in existing_links:
-    #                 continue  # skip if article was previously collected
-    #             title.append(title_text)
-    #             search_terms.append(term)
-    #             source.append(source_text)
-    #             link.append(decoded_url)
-    #             #date has to work for deduping
-    #             try:
-    #                 published.append(parser.parse(item.pubDate.text).date())
-    #             except (ValueError, TypeError):
-    #                 published.append(None)
-    #                 print(f"WARNING! Date Error: {item.pubDate.text}")
-
-    #             regex_pattern = re.compile('(https?):((|(\\\\))+[\w\d:#@%;$()~_?\+-=\\\.&]*)')
-    #             domain_search = regex_pattern.search(str(item.source))
-    #             domain.append(domain_search.group(0) if domain_search else None) # prevent AttributeError: 'NoneType'
-    #         else:
-    #             print("Error:", decoded_url['message'])
-    # except requests.exceptions.RequestException as e:
-    #     print(f"Request error for term {term}: {e}")
-
 
 print('Created lists')
 
