@@ -49,7 +49,7 @@ header = {'User-Agent': user_agent}
 
 # debug prefix
 # encode-decode search terms
-read_file = pd.read_csv('DEBUG-EnterpriseRisksListEncoded.csv', encoding='utf-8')
+read_file = pd.read_csv('EnterpriseRisksListEncoded.csv', encoding='utf-8')
 read_file['ENTERPRISE_RISK_ID'] = pd.to_numeric(read_file['ENTERPRISE_RISK_ID'], downcast='integer', errors='coerce')
 
 def process_encoded_search_terms(term):
