@@ -123,8 +123,8 @@ for term in read_file.SEARCH_TERMS.dropna():
                     print(f"Skipping {decoded_url} (Detected translated article)")
                     continue  # skip if true
 
-                if decoded_url in existing_links:
-                    continue  # skip if article was previously collected
+                # if decoded_url in existing_links:
+                #     continue  # skip if article was previously collected
                 
                 title.append(title_text)
                 search_terms.append(term)
