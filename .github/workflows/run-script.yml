@@ -1,0 +1,65 @@
+name: Run Python Script and Save CSV Daily
+
+on:
+  # schedule the workflow to run daily at 6:00 AM Eastern Time (ET)
+  schedule:
+    - cron: '0 10 * * *' # Runs every day at 10:00 UTC (6:00 AM ET)
+  # allow manual triggering of the workflow
+  workflow_dispatch:
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install lxml[html_clean]
+
+    - name: Create Output Directory
+      run: mkdir -p online_sentiment/output
+
+    # activated at prod
+    # - name: Run Emerging Risk News script
+    #   run: python EmergingRiskNews.py
+
+    - name: Run Enterprise Risk News script
+      run: python EnterpriseRiskNews.py
+
+    # activated at test
+    - name: Run Emerging Risk News script
+      run: python EmergingRiskNews.py
+
+    - name: Check for Changes
+      id: check_changes
+      run: |
+        git status --porcelain
+        if [[ -z $(git status --porcelain) ]]; then
+          echo "No changes detected."
+          echo "has_changes=false" >> $GITHUB_ENV
+        else
+          echo "Changes detected."
+          echo "has_changes=true" >> $GITHUB_ENV
+        fi
+
+    - name: Push generated CSV files
+      if: env.has_changes == 'true'
+      run: |
+        git config --global user.name "github-actions"
+        git config --global user.email "github-actions@github.com"
+        git pull --rebase origin main  # pull latest changes to prevent push conflicts
+        git add online_sentiment/output/*.csv
+        git commit -m "Update CSV files"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
