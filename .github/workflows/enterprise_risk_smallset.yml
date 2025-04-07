@@ -26,8 +26,8 @@ jobs:
 
     - name: Run Enterprise Risk News script
       run: |
-        echo "Running EnterpriseRiskNews.py..."
-        python DEBUG-EnterpriseRiskNews.py || echo "EnterpriseRiskNews.py failed!" # debug script
+        echo "Running DEBUG-EnterpriseRiskNews.py..."
+        python DEBUG-EnterpriseRiskNews.py || echo "DEBUG-EnterpriseRiskNews.py failed!" # debug script
 
     - name: Check for changes
       id: check_changes
