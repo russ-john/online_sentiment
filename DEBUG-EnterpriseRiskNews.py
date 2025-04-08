@@ -86,7 +86,7 @@ else:
 
 # Grab Google links
 url_start = 'https://news.google.com/rss/search?q={'
-url_end = '}%20when%3A6h'  #6hrs
+url_end = '}%20when%3A1d'
 
 for term in read_file.SEARCH_TERMS.dropna():
     try:
@@ -184,4 +184,6 @@ alerts = pd.DataFrame({
     'POLARITY': polarity
 })
 
-display('alerts')
+# write
+alerts['LAST_RUN_TIMESTAMP'] = dt.datetime.now().isoformat()
+alerts.to_csv('DEBUG-EnterpriseRiskSample.csv', index=False, encoding='utf-8')
